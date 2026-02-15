@@ -169,12 +169,19 @@ end
 runService.Heartbeat:Connect(function()
     if hitboxEnabled then
         for _, v in pairs(game.Players:GetPlayers()) do
-            if v ~= player and v.Character and v.Character:FindFirstChild(hitboxPart) then
-                local part = v.Character[hitboxPart]
-                part.Size = Vector3.new(hitboxSize, hitboxSize, hitboxSize)
-                part.Transparency = hitboxTransparency
-                part.CanCollide = false 
-                part.Massless = true    
+            if v ~= player and v.Character then
+                local part = v.Character:FindFirstChild(hitboxPart)
+                if part and part:IsA("BasePart") then
+                    part.Size = Vector3.new(hitboxSize, hitboxSize, hitboxSize)
+                    part.Transparency = hitboxTransparency
+                    part.CanCollide = false 
+                    part.Massless = true 
+                    
+                    if hitboxPart == "HumanoidRootPart" then
+                        part.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+                        part.AssemblyAngularVelocity = Vector2.new(0, 0)
+                    end
+                end
             end
         end
     end
@@ -226,7 +233,6 @@ runService.Heartbeat:Connect(function()
                     local finalCF = (tHRP.CFrame + (tHRP.AssemblyLinearVelocity * 0.1)) * offset
                     char:PivotTo(CFrame.new(finalCF.Position, tHRP.Position))
                 else
-                    
                     lockedTarget = nil 
                     char:PivotTo(CFrame.new(safePos))
                 end
@@ -882,6 +888,25 @@ do
     local HitboxToggle = Tabs.Hitboxes:AddToggle("HitboxToggle", { Title = "Enabled", Default = false })
     HitboxToggle:OnChanged(function(Value)
         hitboxEnabled = Value
+
+        if not Value then
+            for _, v in pairs(game.Players:GetPlayers()) do
+                if v ~= player and v.Character then
+                    local head = v.Character:FindFirstChild("Head")
+                    local hrp = v.Character:FindFirstChild("HumanoidRootPart")
+                    
+                    if head then
+                        head.Size = Vector3.new(1.2, 1.2, 1.2) 
+                        head.Transparency = 0
+                    end
+                    if hrp then
+                        hrp.Size = Vector3.new(2, 2, 1) 
+                        hrp.Transparency = 1
+                    end
+                end
+            end
+        end
+        
         Notify("Hitboxes", Value)
     end)
 
